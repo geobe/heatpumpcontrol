@@ -138,7 +138,8 @@ class S10Access {
         def s10Access = new S10Access(CONFIGFILE)
         def b = s10Access.openSite()
         def v = s10Access.readCurrentValues()
-        println v
+        def r = new Reading(v)
+        println r
         s10Access.doLogout()
         Thread.sleep 5000
         b.close()
@@ -146,7 +147,7 @@ class S10Access {
 }
 
 /**
- * Login web page
+ * S10  web page
  */
 class SinglePage extends Page {
     static url
