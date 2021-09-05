@@ -1,0 +1,18 @@
+@startuml
+'https://plantuml.com/state-diagram
+
+scale 800 width
+[*] --> Idle
+Idle -> Blocked : SurplusExpected
+Idle: NoSurplus / ignore
+
+Blocked -left-> Idle : EndBlock
+
+Idle --> Charging : Surplus
+
+Charging --> Idle: NoSurplus
+
+
+
+}
+@enduml
