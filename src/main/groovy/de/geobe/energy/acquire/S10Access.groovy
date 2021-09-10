@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory
 
 class S10Access {
 
-    private static CONFIGFILE = 'liveConfig.cfg'
+    static CONFIGFILE = 'liveConfig.cfg'
 
     static final boolean isRaspi = System.getProperty('os.arch') == 'arm'
     static overlayCloser

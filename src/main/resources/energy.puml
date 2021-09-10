@@ -1,18 +1,57 @@
 @startuml
+
 scale 900 width
 'https://plantuml.com/class-diagram
-package de.geobe.energy {
-    package acquire {
-        class PvMonitor <<actor>><<singleton>>{}
-        class Reading <<datatype>>{}
-        class S10Access{}
-        class SinglePage{}
+    package com.pi4j{
+        class Pi4J
     }
-}
 
-package de.geobe.energy.heatpump{
-    class HeatpumpManager <<actor>><<singleton>>{}
-    class HeatpumpController <<bridge>>
-}
+'package de.geobe.energy {'
+    package heatpump{
+            class HeatpumpController <<bridge>>
+        together {
+        class HeatpumpManager <<actor>><<singleton>>{}
+            class Acquisition <<bridge>>{
+                - pvMonitor:PvMonitor
+                + recentValues(): List<Reading>
+            }
+            class PvEvaluator{
+                + isReady(int lastMinutes)
+                + averageOf(int lastMinutes)
+                + minMaxOf((int lastMinutes)
+            }
+        }
+    }
+
+    package acquire {
+        together {
+            class PvMonitor<<actor>>{
+                + pvRecorder:PvRecorder
+                + notificationTarget: Actor
+                act()
+                afterStart()
+                afterStop()
+
+            }
+            class PvRecorder {
+                - addReading(Reading reading)
+                + val()
+            }
+        }
+        class S10Access{ }
+        class SinglePage{}
+        PvMonitor ..> S10Access: <<uses>>
+        S10Access ..> SinglePage: <<uses>>
+        S10Access ..> Reading: <<uses>>
+        PvRecorder ..> Reading: <<uses>>
+        class Reading <<datatype>>
+    }
+    HeatpumpManager ..> PvEvaluator:<<uses>>
+    HeatpumpManager ..> HeatpumpController:<<uses>>
+    HeatpumpManager ..> Acquisition:<<uses>>
+    Acquisition ..> PvMonitor:<<uses>>
+    PvEvaluator -[hidden]- PvRecorder
+    HeatpumpController .d.> Pi4J:<<uses>>
+'}'
 
 @enduml
