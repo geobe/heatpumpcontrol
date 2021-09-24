@@ -41,7 +41,10 @@ ext {
     gebVersion = '4.1'
     seleniumVersion = '3.141.59'
     slf4jVersion ='1.7.32'
+    pi4jVersion = '1.4'
 }
+
+apply from: 'https://raw.githubusercontent.com/geobe/Java2PiWithIdea/master/crossdev.gradle'
 
 dependencies {
     implementation "org.codehaus.groovy:groovy-all:${groovyVersion}"
@@ -54,9 +57,10 @@ dependencies {
     implementation "org.gebish:geb-spock:${gebVersion}"
     implementation "org.slf4j:slf4j-api:${slf4jVersion}"
     implementation "org.slf4j:slf4j-simple:${slf4jVersion}"
+    implementation "com.pi4j:pi4j-core:${pi4jVersion}"
 }
 
-mainClassName='de.geobe.energy.heatpump.TestRun'
+mainClassName='de.geobe.energy.heatpump.HeatpumpController'
 
 test {
     useJUnitPlatform()
