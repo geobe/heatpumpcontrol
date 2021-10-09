@@ -37,6 +37,10 @@ import org.slf4j.LoggerFactory
 class S10Access {
 
     static CONFIGFILE = 'liveConfig.cfg'
+    static final SLEEPTIME_PC = 500
+    static final SLEEPTIME_PI = 2000
+
+    static Logger logger = LoggerFactory.getLogger(S10Access.class)
 
     static final boolean isRaspi = System.getProperty('os.arch') == 'arm'
     static overlayCloser
@@ -46,7 +50,7 @@ class S10Access {
     private static final Logger LOG = LoggerFactory.getLogger(S10Access.class)
 
     def waitOnPage = true
-    def sleeptime = 500
+    static sleeptime = SLEEPTIME_PC
     def login
     def overlay
     def unitSelect
@@ -84,14 +88,19 @@ class S10Access {
         // prepare driver and browser
         if (isRaspi) {
             // seems to run only with these options on raspi
+            sleeptime = SLEEPTIME_PI
+            logger.info('running on raspi')
+
+//            options.addArguments('--headless')
+        } else {
+            logger.info('running on pc')
             options.addArguments('--no-sandbox')
             options.addArguments('--disable-dev-shm-usage')
             options.addArguments('--headless')
-            driver = new ChromeDriver(options)
-            browser = new Browser(driver: driver)
-        } else {
-            browser = new Browser()
+//            browser = new Browser()
         }
+        driver = new ChromeDriver(options)
+        browser = new Browser(driver: driver)
     }
 
     /**
@@ -108,14 +117,19 @@ class S10Access {
             initUris()
             to SinglePage
             if (waitOnPage) Thread.sleep sleeptime
+            logger.info('at login')
             login(login.username, login.password)
             if (waitOnPage) Thread.sleep sleeptime * 4
+            logger.info('login done')
             closeOverlay()
             if (waitOnPage) Thread.sleep sleeptime
+            logger.info('overlay closed')
             selectUnit()
             if (waitOnPage) Thread.sleep sleeptime * 4
+            logger.info('unit selected')
             selectInfo()
             if (waitOnPage) Thread.sleep sleeptime * 4
+            logger.info('infopage selected')
         }
     }
 
@@ -137,12 +151,19 @@ class S10Access {
     static void main(String[] args) {
         def s10Access = new S10Access(CONFIGFILE)
         def b = s10Access.openSite()
-        def v = s10Access.readCurrentValues()
-        def r = new Reading(v)
-        println r
+        logger.info('site is open')
+        for (i in 0..<10) {
+            def v = s10Access.readCurrentValues()
+            def r = new Reading(v)
+            println "$i: $r"
+            Thread.sleep 22000
+        }
+        logger.info('10 times current values read')
         s10Access.doLogout()
-        Thread.sleep 5000
+        Thread.sleep 1000
+        logger.info('logged out')
         b.close()
+        logger.info('browser closed')
     }
 }
 

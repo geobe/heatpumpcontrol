@@ -40,7 +40,8 @@ import com.pi4j.io.gpio.RaspiPin
  * |  contact   |   contact  | PRECEDENCE<br>
  * |   open     |    open    | SUSPENDED<br>
  * |   open     |   contact  | ENFORCED<br>
- * This implies that K1 must use the switch-off contact, K2 the switch-on contact of the toggle relay
+ * This implies that K1 must use the switch-off contact, K2 the switch-on contact of the toggle relay<br>
+ * Relays have inverse logic i.e. PinState.High => relay is off
  */
 class HeatpumpController {
     static final K1PIN = RaspiPin.GPIO_00 // pi4j v2 17     // for Ochsner Pin21
@@ -53,28 +54,38 @@ class HeatpumpController {
     //= pi4j.dout().create(K2PIN, 'RelayK2')
 
     HeatpumpController() {
-        k1Pin.setShutdownOptions(true, PinState.HIGH)
-        k2Pin.setShutdownOptions(true, PinState.LOW)
-/*
-        k1Pin.config().initialState(DigitalState.LOW)
-        k1Pin.config().shutdownState(DigitalState.LOW)
-        k2Pin.config().initialState(DigitalState.LOW)
-        k2Pin.config().shutdownState(DigitalState.LOW)
-*/
+        k1Pin.setShutdownOptions(false, PinState.HIGH)
+        k2Pin.setShutdownOptions(false, PinState.HIGH)
     }
 
     def shutdown() {
         pi4j.shutdown()
     }
 
+    /**
+     * Make sure gpio controller has really changed states
+     * @return
+     */
     HeatPumpState getState() {
-        return state
+        def s1 = k1Pin.state
+        def s2 = k2Pin.state
+        println "Pin states: k1 = $s1, k2 = $s2"
+        if(s1 == PinState.HIGH && s2 == PinState.HIGH) {
+            return HeatPumpState.NORMALOPERATION
+        } else if(s1 == PinState.LOW && s2 == PinState.HIGH) {
+            return HeatPumpState.SUSPENDED
+        } else if(s1 == PinState.HIGH && s2 == PinState.LOW) {
+            return HeatPumpState.PRECEDENCE
+        }
+        throw new RuntimeException('Internal error reading pin states')
     }
 
     HeatPumpState setState(HeatPumpState s) throws IllegalArgumentException {
         switch (s) {
             case HeatPumpState.ENFORCED:
-                throw new IllegalArgumentException("State $s not implemented")
+                k1Pin.high()
+                k2Pin.high()
+                throw new IllegalArgumentException("State $s not implemented, set to NormalOperation")
             case HeatPumpState.NORMALOPERATION:
                 k1Pin.high()
                 k2Pin.high()
@@ -87,28 +98,35 @@ class HeatpumpController {
                 k1Pin.high()
                 k2Pin.low()
         }
-        state = s
+        state
     }
 
     static void main(String[] args) {
         def controller = new HeatpumpController()
         println 'both relays should be off'
-        Thread.sleep(10000)
-        println 'going to SUSPENDED mode, K1 should be high'
-        controller.state = HeatPumpState.SUSPENDED
-        Thread.sleep(10000)
-        println 'going to PRECEDENCE mode, K2 should be high'
-        controller.state = HeatPumpState.PRECEDENCE
-        Thread.sleep(10000)
-        println 'going to NORMALOPERATION mode, K1 and K2 should be low'
-        controller.setState HeatPumpState.NORMALOPERATION
-        Thread.sleep(10000)
-//        println 'going to ENFORCED mode, should throw exceptionh'
-//        Thread.sleep(1000)
-//        controller.state = HeatPumpState.ENFORCED
-        println 'shutdown, every relay should be off'
+        while(true){
+            print "Eingabe Normal, Suspend, Precedence, Enforced, eXit > "
+            def r = java.lang.System.in.newReader().readLine()
+            if(r.toUpperCase().startsWith('N')) {
+                controller.state = HeatPumpState.NORMALOPERATION
+            } else if(r.toUpperCase().startsWith('P')) {
+                controller.state = HeatPumpState.PRECEDENCE
+            } else if(r.toUpperCase().startsWith('S')) {
+                controller.state = HeatPumpState.SUSPENDED
+            } else if(r.toUpperCase().startsWith('E')) {
+                try {
+                    controller.state = HeatPumpState.ENFORCED
+                } catch(Exception e) {
+                    println e
+                }
+            } else if(r.toUpperCase().startsWith('X')) {
+                break
+            } else {
+                println "read: $r"
+            }
+        }
         controller.shutdown()
-        Thread.sleep(5000)
+        Thread.sleep(1000)
     }
 }
 

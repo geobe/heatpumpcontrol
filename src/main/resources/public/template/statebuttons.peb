@@ -1,0 +1,25 @@
+        <div id="div-status" class="w3-container {{ stateColor }} w3-card w3-left">
+          <h2>Smart Grid Steuerung: Status</h2>
+          <p>
+          <input class="w3-radio" type="radio" name="sg-state" value="{{ stateNormal }}" {{ checkedNormal }}
+          hx-post="/state" hx-target="#div-status" hx-swap="outerHTML">
+          <label>Normalbetrieb</label></p>
+          <p>
+          <input class="w3-radio" type="radio" name="sg-state" value="{{ statePrecedence }}" {{ checkedPrecedence }}
+          hx-post="/state" hx-target="#div-status" hx-swap="outerHTML">
+          <label>Vorrang</label></p>
+          <p>
+          <input class="w3-radio" type="radio" name="sg-state" value="{{ stateSuspended }}" {{ checkedSuspended }}
+          hx-post="/state" hx-target="#div-status" hx-swap="outerHTML">
+          <label>Suspendiert</label></p>
+          <!-- ONLY FOR TESTING ILLEGAL POST PARAMETERS p>
+          <input class="w3-radio" type="radio" name="sg-state" value="Hurz"
+          hx-post="/state" hx-target="#div-status" hx-swap="outerHTML">
+          <label>Fehlereingabe</label></p --!>
+            <div id="div-error" class="w3-panel w3-red w3-display-container" {{ stateAlert | default('hidden') }}>
+                  <span onclick="this.parentElement.style.display='none'"
+                  class="w3-button w3-large w3-display-topright">&times;</span>
+                  <h3>Illegale Eingabe!</h3>
+                  <p>Smart Grid Status auf Normalbetrieb gesetzt</p>
+            </div>
+        </div>
