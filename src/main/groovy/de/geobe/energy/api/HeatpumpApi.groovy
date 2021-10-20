@@ -27,6 +27,7 @@ import com.mitchellbosecke.pebble.PebbleEngine
 import com.mitchellbosecke.pebble.template.PebbleTemplate
 import de.geobe.energy.heatpump.HeatPumpState
 import de.geobe.energy.heatpump.HeatpumpController
+import groovy.json.JsonOutput
 import spark.Request
 import spark.Response
 
@@ -38,7 +39,7 @@ class HeatpumpApi {
     static HeatpumpController heatpumpController
 
     static {
-        if(isRaspi) {
+        if (isRaspi) {
             heatpumpController = new HeatpumpController()
         }
     }
@@ -53,32 +54,75 @@ class HeatpumpApi {
         staticFiles.location("public")
 
         post('state') { Request req, Response res ->
+
+            def accept = req.headers('Accept')
             def val = req.queryParams('sg-state')
             try {
                 def requestedState = HeatPumpState.valueOf(val?.toUpperCase())
-                if(isRaspi) {
+                if (isRaspi) {
                     requestedState = heatpumpController.state = requestedState
                 }
                 res.status 200
-                def ctx = setStateContext(requestedState)
-                streamOut(stateButtons, ctx)
+                if (accept.endsWith('json')) {
+                    def json = [
+                            state : JsonOutput.toJson(requestedState),
+                            status: 'OK'
+                    ]
+                    println "json: $json"
+                    json
+                } else {
+                    def ctx = setStateContext(requestedState)
+                    streamOut(stateButtons, ctx)
+                }
             } catch (IllegalArgumentException) {
                 HeatPumpState state = HeatPumpState.NORMALOPERATION
                 res.status(200)
                 res.body('Bad Request')
                 println "Fehleingabe $val"
-                if(isRaspi) {
+                if (isRaspi) {
                     state = heatpumpController.state = state
                 }
+                if (accept.endsWith('json')) {
+                    def json = [
+                            state : JsonOutput.toJson(state),
+                            status: "Illegal input $val"
+                    ]
+//                    println "json: $json"
+                    json
+                } else {
+                    def ctx = setStateContext(state)
+                    ctx['stateAlert'] = 'title="Fehlermeldung"'
+                    streamOut(stateButtons, ctx)
+                }
+            }
+        }
+
+        get('/state') { Request req, Response res ->
+            def accept = req.headers('Accept')
+            def state
+            if (isRaspi) {
+                state = heatpumpController.state
+            } else {
+                state = 'Not defined'
+            }
+            res.status 200
+            if (accept.endsWith('json')) {
+                def json = [
+                        state : JsonOutput.toJson(state),
+                        status: 'OK'
+                ]
+//                println "json: $json"
+                json
+            } else {
                 def ctx = setStateContext(state)
-                ctx['stateAlert'] = 'title="Fehlermeldung"'
                 streamOut(stateButtons, ctx)
             }
+
         }
 
         get('/') { req, res ->
             HeatPumpState state = HeatPumpState.NORMALOPERATION
-            if(isRaspi) {
+            if (isRaspi) {
                 state = heatpumpController.state = state
             }
             def ctx = setStateContext(state)

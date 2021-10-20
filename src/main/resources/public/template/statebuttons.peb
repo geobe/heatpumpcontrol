@@ -1,4 +1,5 @@
-        <div id="div-status" class="w3-container {{ stateColor }} w3-card w3-left">
+        <div id="div-status" class="w3-container {{ stateColor }} w3-card w3-left"
+        hx-get="state" hx-trigger="every 1s" hx-swap="outerHTML">
           <h2>Smart Grid Steuerung: Status</h2>
           <p>
           <input class="w3-radio" type="radio" name="sg-state" value="{{ stateNormal }}" {{ checkedNormal }}

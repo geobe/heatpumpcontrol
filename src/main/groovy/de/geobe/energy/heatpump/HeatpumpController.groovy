@@ -69,7 +69,7 @@ class HeatpumpController {
     HeatPumpState getState() {
         def s1 = k1Pin.state
         def s2 = k2Pin.state
-        println "Pin states: k1 = $s1, k2 = $s2"
+//        println "Pin states: k1 = $s1, k2 = $s2"
         if(s1 == PinState.HIGH && s2 == PinState.HIGH) {
             return HeatPumpState.NORMALOPERATION
         } else if(s1 == PinState.LOW && s2 == PinState.HIGH) {
