@@ -65,10 +65,10 @@ class HeatpumpApi {
                 res.status 200
                 if (accept.endsWith('json')) {
                     def json = [
-                            state : JsonOutput.toJson(requestedState),
+                            state : requestedState,
                             status: 'OK'
                     ]
-                    json
+                    JsonOutput.toJson json
                 } else {
                     def ctx = setStateContext(requestedState)
                     streamOut(stateButtons, ctx)
@@ -82,11 +82,11 @@ class HeatpumpApi {
                 }
                 if (accept.endsWith('json')) {
                     def json = [
-                            state : JsonOutput.toJson(state),
+                            state : state,
                             status: "Bad Request $val"
                     ]
 //                    println "json: $json"
-                    json
+                    JsonOutput.toJson json
                 } else {
                     def ctx = setStateContext(state)
                     ctx['stateAlert'] = 'title="Fehlermeldung"'
@@ -106,10 +106,10 @@ class HeatpumpApi {
             res.status 200
             if (accept.endsWith('json')) {
                 def json = [
-                        state : JsonOutput.toJson(state),
+                        state : state,
                         status: 'OK'
                 ]
-                json
+                JsonOutput.toJson json
             } else {
                 def ctx = setStateContext(state)
                 streamOut(stateButtons, ctx)
