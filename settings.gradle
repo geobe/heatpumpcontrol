@@ -22,5 +22,5 @@
  * SOFTWARE.
  */
 
-rootProject.name = 'pvAccess'
+rootProject.name = 'heatpumpcontrol'
 

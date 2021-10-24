@@ -68,7 +68,6 @@ class HeatpumpApi {
                             state : JsonOutput.toJson(requestedState),
                             status: 'OK'
                     ]
-                    println "json: $json"
                     json
                 } else {
                     def ctx = setStateContext(requestedState)
@@ -78,14 +77,13 @@ class HeatpumpApi {
                 HeatPumpState state = HeatPumpState.NORMALOPERATION
                 res.status(200)
                 res.body('Bad Request')
-                println "Fehleingabe $val"
                 if (isRaspi) {
                     state = heatpumpController.state = state
                 }
                 if (accept.endsWith('json')) {
                     def json = [
                             state : JsonOutput.toJson(state),
-                            status: "Illegal input $val"
+                            status: "Bad Request $val"
                     ]
 //                    println "json: $json"
                     json
@@ -111,7 +109,6 @@ class HeatpumpApi {
                         state : JsonOutput.toJson(state),
                         status: 'OK'
                 ]
-//                println "json: $json"
                 json
             } else {
                 def ctx = setStateContext(state)

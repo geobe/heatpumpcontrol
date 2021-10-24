@@ -28,7 +28,7 @@ plugins {
 }
 
 group 'de.geobe.energy'
-version '0.9'
+version '1.1'
 
 repositories {
     mavenCentral()
