@@ -95,7 +95,7 @@ class HeatpumpApi {
             }
         }
 
-        get('/state') { Request req, Response res ->
+        get('state') { Request req, Response res ->
             def accept = req.headers('Accept')
             def state
             if (isRaspi) {
