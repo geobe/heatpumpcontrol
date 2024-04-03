@@ -28,13 +28,20 @@
 <html>
 	<head>
         <meta name="viewport" content="width=device-width, initial-scale=1">
+
         <link rel="stylesheet" href="/css/w3.css">
+        <link rel="stylesheet" href="/css/w3-theme-sampler.css">
         <link rel="icon" href="/static/pumahead.ico">
-{#         <script src="https://unpkg.com/htmx.org@1.6.0" integrity="sha384-G4dtlRlMBrk5fEiRXDsLjriPo8Qk5ZeHVVxS8KhX6D7I9XXJlNqbdvRlp9/glk5D" crossorigin="anonymous"></script> #}
-       <script src='/script/htmx.min.js'> </script>
+        <script src='/script/htmx-1.9.3.min.js'> </script>
+        <script src='/script/htmx-ws.js'> </script>
+        <script src='/script/chart-4.3.3.js'> </script>
+        <link rel="icon" href="/static/pumahead.ico">
 		<title>{{ websiteTitle }}</title>
 	</head>
 	<body>
+        <!-- websocket connection -->
+        <div hx-ext="ws" ws-connect="/update">
+        </div>
 	{% include "./statebuttons.peb" %}
 	</body>
 </html>

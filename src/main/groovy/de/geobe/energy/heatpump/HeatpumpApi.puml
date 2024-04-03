@@ -1,0 +1,31 @@
+@startuml
+'https://plantuml.com/state-diagram
+
+scale 1000 width
+[*] -left-> u  : arch != RaspberryPi
+[*] -down-> r : arch == RaspberryPi
+
+state "Running" as r {
+[*] -down-> no
+
+state "NormalOperation" as no
+    no: entry: countdown = MAX_SUSPEND
+    no: on: tick -> broadcast(heartbeat)
+    no: on: post(timeout) -> countdown = timeout
+
+state "Suspended" as sup
+    sup: on: tick -> broadcast(--countdown)
+}
+
+state "Undefined" as u
+
+r -> r : post(undefined) / BAD_REQUEST
+
+no -down-> sup : post(suspend)
+
+sup -up-> no : post(normal)
+sup -up-> no : countdown == 0
+
+u -down-> [*]
+
+@enduml

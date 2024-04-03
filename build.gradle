@@ -28,15 +28,17 @@ plugins {
 }
 
 group 'de.geobe.energy'
-version '1.1'
+version '1.5'
 
 repositories {
     mavenCentral()
 }
 
 ext {
-    groovyVersion='3.0.8'
-    slf4jVersion ='1.7.32'
+    groovyBomVersion='4.0.20'
+    slf4jVersion ='2.0.12'
+    jodaVersion='2.12.2'
+//    javaWebsocketVersion = '1.5.6'
     pi4jVersion = '1.4'
     sparkVersion = '2.9.3'
     pebbleVersion='3.1.5'
@@ -45,15 +47,19 @@ ext {
 apply from: 'https://raw.githubusercontent.com/geobe/Java2PiWithIdea/master/crossdev.gradle'
 
 dependencies {
-    implementation "org.codehaus.groovy:groovy-all:${groovyVersion}"
+    implementation platform("org.apache.groovy:groovy-bom:${groovyBomVersion}")
+    implementation 'org.apache.groovy:groovy'
+    implementation 'org.apache.groovy:groovy-json'
     implementation "org.slf4j:slf4j-api:${slf4jVersion}"
     implementation "org.slf4j:slf4j-simple:${slf4jVersion}"
+    implementation "joda-time:joda-time:${jodaVersion}"
+//    implementation "org.java-websocket:Java-WebSocket:${javaWebsocketVersion}"
     implementation "com.pi4j:pi4j-core:${pi4jVersion}"
     implementation "com.sparkjava:spark-core:${sparkVersion}"
     implementation "io.pebbletemplates:pebble:${pebbleVersion}"
 }
 
-mainClassName='de.geobe.energy.api.HeatpumpApi'
+mainClassName='de.geobe.energy.heatpump.HeatpumpApi'
 //test {
 //    useJUnitPlatform()
 //}
