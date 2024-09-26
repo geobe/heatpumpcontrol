@@ -1,22 +1,29 @@
 <div id="div-status" class="w3-container {{ stateColor }} w3-card w3-left">
 {#        hx-get="state" hx-trigger="every 10s" hx-swap="outerHTML">#}
-    <h2>Wärmepumpensteuerung: Status</h2>
+    <h3>Wärmepumpensteuerung</h3>
+    {% include "./heartbeat.peb" %}
     <div class="w3-row" id="sg-normal">
-        <div class="w3-col s12 m6 l6 w3-left">
+        <div class="w3-col s12 m4 l4 w3-left">
             <input class="w3-radio" type="radio" name="sg-state" value="{{ stateNormal }}" {{ checkedNormal }}
-            hx-post="/state">
+            hx-post="/state/normal" autocomplete="off">
             <label>Normalbetrieb</label></p>
         </div>
-        {% include "./heartbeat.peb" %}
     </div>
     <div class="w3-row" id="sg-suspend">
-        <div class="w3-col s12 m6 l6 w3-left">
+        <div class="w3-col s12 m4 l4 w3-left">
             <input class="w3-radio" type="radio" name="sg-state" value="{{ stateSuspended }}" {{ checkedSuspended }}
-            hx-post="/state" hx-include="[name='sg-time-off']">
+            hx-post="/state/suspend" autocomplete="off">
             <label>Suspendiert</label></p>
         </div>
-        {% include "./countdown.peb" %}
     </div>
+    <div class="w3-row" id="sg-timed">
+        <div class="w3-col s12 m4 l4 w3-left">
+            <input class="w3-radio" type="radio" name="sg-state" value="{{ stateTimed }}" {{ checkedTimed }}
+            hx-post="/state/timed" autocomplete="off">
+            <label>Zeitsteuerung</label></p>
+        </div>
+    </div>
+    {% include "./timetable.peb" %}
     <div id="div-error" class="w3-panel w3-red w3-display-container" {{ stateAlert | default('hidden') }}>
       <span onclick="this.parentElement.style.display='none'"
       class="w3-button w3-large w3-display-topright">&times;</span>

@@ -31,6 +31,8 @@
 
         <link rel="stylesheet" href="/css/w3.css">
         <link rel="stylesheet" href="/css/w3-theme-sampler.css">
+        <link rel="stylesheet" href="/css/w3-colors-vivid.css">
+        <link rel="stylesheet" href="/css/w3-colors-signal.css">
         <link rel="icon" href="/static/pumahead.ico">
         <script src='/script/htmx-1.9.3.min.js'> </script>
         <script src='/script/htmx-ws.js'> </script>

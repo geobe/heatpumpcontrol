@@ -34,7 +34,7 @@ import com.pi4j.io.gpio.RaspiPin
  * are supported.
  * Interface class to one relay controlling smart grid state of Ochsner heat pump.
  * See document AA-FE_Einstellung_Smart_Grid_OTE3_4_ab_V5.8x_DE_20160302.pdf.
- * Two states are supported with a single input contact, see HeatPumpState below. <br>
+ * Two states are supported with a single input contact, see HeatpumpControllerState below. <br>
  * In our HW configuration, we use 1 toggle relay K1. When the program is stopped or not functional,
  * the heat pump shall run in NORMALOPERATION mode. We have the following truth table:<br>
  * | PIN21 = K1 | MODE<br>
@@ -43,9 +43,9 @@ import com.pi4j.io.gpio.RaspiPin
  * This implies that K1 must use the switch-off contact of the toggle relay<br>
  * Relays have inverse logic i.e. PinState.High => relay is off
  */
-class HeatpumpController {
+class HeatpumpController implements IHeatpumpController {
     static final K1PIN = RaspiPin.GPIO_00 // (pi4j v2 17), HW pin 11 --> for Ochsner Pin21
-    private HeatPumpState state = HeatPumpState.NORMALOPERATION
+    private HeatpumpControllerState state = HeatpumpControllerState.NORMALOPERATION
     private def pi4j = GpioFactory.getInstance()//= Pi4J.newAutoContext()
     private def k1Pin = pi4j.provisionDigitalOutputPin(K1PIN, 'RelayK1', PinState.HIGH)
 
@@ -53,7 +53,7 @@ class HeatpumpController {
         k1Pin.setShutdownOptions(false, PinState.HIGH)
     }
 
-    def shutdown() {
+    void shutdown() {
         pi4j.shutdown()
     }
 
@@ -61,22 +61,22 @@ class HeatpumpController {
      * Make sure gpio controller has really changed states
      * @return updated state
      */
-    HeatPumpState getState() {
+    HeatpumpControllerState getState() {
         def s1 = k1Pin.state
         if(s1 == PinState.HIGH) {
-            return HeatPumpState.NORMALOPERATION
+            return HeatpumpControllerState.NORMALOPERATION
         } else if(s1 == PinState.LOW) {
-            return HeatPumpState.SUSPENDED
+            return HeatpumpControllerState.SUSPENDED
         }
         throw new RuntimeException('Internal error reading pin states')
     }
 
-    HeatPumpState setState(HeatPumpState s) throws IllegalArgumentException {
+    HeatpumpControllerState setState(HeatpumpControllerState s) throws IllegalArgumentException {
         switch (s) {
-            case HeatPumpState.NORMALOPERATION:
+            case HeatpumpControllerState.NORMALOPERATION:
                 k1Pin.high()
                 break
-            case HeatPumpState.SUSPENDED:
+            case HeatpumpControllerState.SUSPENDED:
                 k1Pin.low()
                 break
         }
@@ -90,9 +90,9 @@ class HeatpumpController {
             print "Eingabe Normal, Suspend, eXit > "
             def r = java.lang.System.in.newReader().readLine()
             if(r.toUpperCase().startsWith('N')) {
-                controller.state = HeatPumpState.NORMALOPERATION
+                controller.state = HeatpumpControllerState.NORMALOPERATION
             } else if(r.toUpperCase().startsWith('S')) {
-                controller.state = HeatPumpState.SUSPENDED
+                controller.state = HeatpumpControllerState.SUSPENDED
             } else if(r.toUpperCase().startsWith('X')) {
                 break
             } else {
@@ -104,8 +104,35 @@ class HeatpumpController {
     }
 }
 
-enum HeatPumpState {
+class HeatpumpMockController implements IHeatpumpController {
+
+    private HeatpumpControllerState state = HeatpumpControllerState.NORMALOPERATION
+
+    @Override
+    HeatpumpControllerState getState() {
+        return state
+    }
+
+    @Override
+    HeatpumpControllerState setState(HeatpumpControllerState s) throws IllegalArgumentException {
+        state = s
+        return state
+    }
+
+    @Override
+    void shutdown() {
+
+    }
+}
+
+enum HeatpumpControllerState {
     NORMALOPERATION,        // Normalbetrieb
     SUSPENDED,              // Sperre
     UNDEFINED
+}
+
+interface IHeatpumpController {
+    HeatpumpControllerState getState()
+    HeatpumpControllerState setState(HeatpumpControllerState s) throws IllegalArgumentException
+    void shutdown()
 }

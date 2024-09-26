@@ -6,25 +6,22 @@ scale 1000 width
 [*] -down-> r : arch == RaspberryPi
 
 state "Running" as r {
+r: on: post(undefined) / BAD_REQUEST
+r: on: tick -> broadcast(heartbeat);\n\t\t checkSuspendTimeTable();\n\t\t updateTimeTableUi()
+r: on: post(timetabelChanged):\n\t\t checkSuspendTimeTable();\n\t\t updateTimeTableUi()
 [*] -down-> no
 
 state "NormalOperation" as no
-    no: entry: countdown = MAX_SUSPEND
-    no: on: tick -> broadcast(heartbeat)
-    no: on: post(timeout) -> countdown = timeout
+    no: entry: post(normal)
 
 state "Suspended" as sup
-    sup: on: tick -> broadcast(--countdown)
+    sup: entry: post(suspend)
 }
 
 state "Undefined" as u
 
-r -> r : post(undefined) / BAD_REQUEST
-
-no -down-> sup : post(suspend)
-
-sup -up-> no : post(normal)
-sup -up-> no : countdown == 0
+no -down-> sup : suspend
+sup -up-> no : resume
 
 u -down-> [*]
 

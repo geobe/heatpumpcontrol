@@ -1,6 +1,0 @@
-        <div id="div-countdown" class="w3-col s12 m6 l6 w3-left">
-            <input class="w3-input w3-gray" id="sg-time-off" type="number" name="sg-time-off"
-            style="width: 8ch; height 12px" value="{{ countdownValue }}" {{ countdownDisabled }}
-            hx-post="setCountdown">
-            <label for="sg-time-off">Zeitlimit</label>
-        </div>

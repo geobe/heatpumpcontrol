@@ -1,3 +1,3 @@
-        <div id="div-heartbeat" class="w3-col s12 m6 l6 w3-left" {{ checkedSuspended ? 'hidden' : '' }}>
-            <b style="font-size:24px">{{ heartbeat ? heartbeat : '-' }}</b>
+        <div id="div-heartbeat" class="w3-left">
+            <h4>{{ controllerState }} @ {{ heartbeat ? heartbeat : '-' }}</h4>
         </div>
