@@ -81,6 +81,7 @@ class HeatpumpApi {
                 HeatpumpSupervisor.TICK_TIME,
                 HeatpumpSupervisor.TIMEUNIT_TICK)
         heartbeatExecutor.start()
+        heatpumpSupervisor.readState()
     }
 
     static void main(String[] args) {
@@ -99,7 +100,7 @@ class HeatpumpApi {
 
     Route indexRoute = { Request req, Response res ->
         def ctx = stateTemplateContext
-        def title = 'Smart Grid State' +
+        def title = 'Steuerung Wärmepumpe' +
                 (heatpumpSupervisor.isRaspi ? '' : ' Test Mockup')
         ctx.websiteTitle = title
         ctx.heartbeat = tickPattern.print(DateTime.now())

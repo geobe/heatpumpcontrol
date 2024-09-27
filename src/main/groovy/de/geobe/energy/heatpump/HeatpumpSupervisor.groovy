@@ -24,9 +24,12 @@
 
 package de.geobe.energy.heatpump
 
-import com.mitchellbosecke.pebble.template.PebbleTemplate
+
 import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
 import org.joda.time.DateTime
+import org.joda.time.format.DateTimeFormat
+import org.joda.time.format.DateTimeFormatter
 
 import java.util.concurrent.TimeUnit
 
@@ -34,7 +37,12 @@ class HeatpumpSupervisor {
 
     static final TICK_TIME = 10
     static final TIMEUNIT_TICK = TimeUnit.SECONDS
+    static final currentStateFile = 'heatpumpstate.json'
+    static final stateChangeLog = 'heatpump.log'
+    static final heatpumpDir = '.heatpump'
+    static DateTimeFormatter stampPattern = DateTimeFormat.forPattern('dd.MM.yy HH:mm:ss')
 
+    private JsonSlurper jsonSlurper = new JsonSlurper()
     /** check and remember processor type */
     boolean isRaspi
     /** Hardware interface object */
@@ -58,21 +66,76 @@ class HeatpumpSupervisor {
         }
     }
 
-    def suspendAt(int ix) {
-        if(ix in [0..23]) {
-            suspendedHours[ix] = true
-        }
-    }
-
-    def normalAt(int ix) {
-        if(ix in [0..23]) {
-            suspendedHours[ix] = false
-        }
-    }
-
     def getFullState() {
         [controller: heatpumpController.state,
          supervisor: supervisorState]
+    }
+
+    def getStateStamp() {
+        [timestamp      : stampPattern.print(DateTime.now()),
+         supervisorState: supervisorState,
+         controlerState : heatpumpController.state,
+         timetable      : suspendedHours]
+    }
+
+    File getLogFile(String filename) {
+        def home = System.getProperty('user.home')
+        def dir = new File("$home/$heatpumpDir/".toString())
+        if (!dir.exists()) {
+            dir.mkdir()
+        }
+        if (!dir.exists()) {
+            dir.mkdir()
+        }
+        if (!dir.isDirectory()) {
+            throw new RuntimeException('Logfile directory cannot be created')
+        }
+        new File(dir, filename)
+    }
+
+    def saveState() {
+        def state = stateStamp
+        def json = JsonOutput.toJson(state)
+        def home = System.getProperty('user.home')
+        def file = getLogFile(currentStateFile)
+        file.withWriter { writer ->
+            writer.write json
+        }
+    }
+
+    def readState() {
+        def file = getLogFile(currentStateFile)
+        def savedState
+        if (file.exists()) {
+            file.withInputStream { inputStream ->
+                savedState = jsonSlurper.parse(inputStream)
+                try {
+                    supervisorState = HeatpumpSupervisorState.valueOf(savedState.supervisorState)
+                    heatpumpController.state = HeatpumpControllerState.valueOf(savedState.controlerState)
+                    List<Boolean> timetable = savedState.timetable
+                    suspendedHours = timetable as boolean[]
+                } catch (Exception ex) {
+                    println "Enum problem $ex"
+                    supervisorState = HeatpumpSupervisorState.NORMALOPERATION
+                    heatpumpController.state = HeatpumpControllerState.NORMALOPERATION
+                }
+            }
+        } else {
+            println "nothing saved"
+        }
+
+    }
+
+    def writeLog(def now = DateTime.now()) {
+        def suspHoursList = []
+        suspendedHours.eachWithIndex { boolean isSuspendedHour, int i ->
+            if (isSuspendedHour) {
+                suspHoursList << i
+            }
+        }
+        def logLine =
+                "${stampPattern.print(now)}: ${heatpumpController.state}, $supervisorState, $suspHoursList\n"
+        getLogFile(stateChangeLog).append(logLine)
     }
 
     def execStateChart(HpcEvent event, int hour = 0, boolean suspend = false) {
@@ -155,7 +218,11 @@ class HeatpumpSupervisor {
                 println "Fatal: $supervisorState"
                 break
             default:
-                return
+                break
+        }
+        if (event in [HpcEvent.NORMAL, HpcEvent.SUSPEND, HpcEvent.TIMED, HpcEvent.TIMETABLE_CHANGED]) {
+            saveState()
+            writeLog()
         }
     }
 
@@ -164,10 +231,14 @@ class HeatpumpSupervisor {
             def now = DateTime.now()
             def hour = now.hourOfDay
             def hourPlus = now.plusSeconds(TICK_TIME).hourOfDay
+            def currentControllerState = heatpumpController.state
             if (suspendedHours[hour] || suspendedHours[hourPlus]) {
                 heatpumpController.state = HeatpumpControllerState.SUSPENDED
             } else {
                 heatpumpController.state = HeatpumpControllerState.NORMALOPERATION
+            }
+            if (currentControllerState != heatpumpController.state) {
+                writeLog(now)
             }
         }
     }
