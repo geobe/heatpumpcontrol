@@ -24,10 +24,11 @@
 
 package de.geobe.energy.heatpump
 
-
-import com.pi4j.io.gpio.GpioFactory
-import com.pi4j.io.gpio.PinState
-import com.pi4j.io.gpio.RaspiPin
+import com.pi4j.Pi4J
+import com.pi4j.context.Context
+import com.pi4j.io.gpio.digital.DigitalOutput
+import com.pi4j.io.gpio.digital.DigitalState
+import de.geobe.raspi.service.GpioConfigService
 
 /**
  * Updated: if no additional input module is installed, only normal operation and suspended state
@@ -46,20 +47,19 @@ import com.pi4j.io.gpio.RaspiPin
  * PIN43 (GPIO02) is not used but still wired with a relay. Set it HIGH to switch off completely
  */
 class HeatpumpController implements IHeatpumpController {
-    static final K1PIN = RaspiPin.GPIO_00 // (pi4j v2 17), HW pin 11 --> for Ochsner Pin21
-    static final K2PIN = RaspiPin.GPIO_02 // pi4j v2 27     // not more used but still wired for Ochsner Pin43
-    private HeatpumpControllerState state = HeatpumpControllerState.NORMALOPERATION
-    private def pi4j = GpioFactory.getInstance()//= Pi4J.newAutoContext()
-    private def k1Pin = pi4j.provisionDigitalOutputPin(K1PIN, 'RelayK1', PinState.HIGH)
-    private def k2Pin  = pi4j.provisionDigitalOutputPin(K2PIN, 'RelayK2', PinState.HIGH)
+    static final DigitalOutput k1Pin = GpioConfigService.createDigitalOutput(17, DigitalState.HIGH, DigitalState.HIGH)
+    //aktuell nur ein pin verwendet, pin 2 immer auf HIGH
+    static final DigitalOutput k2Pin = GpioConfigService.createDigitalOutput(27, DigitalState.HIGH, DigitalState.HIGH)
 
-    HeatpumpController() {
-        k1Pin.setShutdownOptions(false, PinState.HIGH)
-        k2Pin.setShutdownOptions(false, PinState.HIGH)
-    }
+    private HeatpumpControllerState state = HeatpumpControllerState.NORMALOPERATION
+
+//    HeatpumpController() {
+//        k1Pin.setShutdownOptions(false, PinState.HIGH)
+//        k2Pin.setShutdownOptions(false, PinState.HIGH)
+//    }
 
     void shutdown() {
-        pi4j.shutdown()
+        GpioConfigService.context.shutdown()
     }
 
     /**
@@ -67,10 +67,10 @@ class HeatpumpController implements IHeatpumpController {
      * @return updated state
      */
     HeatpumpControllerState getState() {
-        def s1 = k1Pin.state
-        if(s1 == PinState.HIGH) {
+        def s1 = k1Pin.tate
+        if(k1Pin.isHigh()) {
             return HeatpumpControllerState.NORMALOPERATION
-        } else if(s1 == PinState.LOW) {
+        } else if(k1Pin.isLow()) {
             return HeatpumpControllerState.SUSPENDED
         }
         throw new RuntimeException('Internal error reading pin states')

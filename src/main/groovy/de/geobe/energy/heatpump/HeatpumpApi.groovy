@@ -24,8 +24,8 @@
 package de.geobe.energy.heatpump
 
 import de.geobe.energy.automation.PeriodicExecutor
-import com.mitchellbosecke.pebble.PebbleEngine
-import com.mitchellbosecke.pebble.template.PebbleTemplate
+import io.pebbletemplates.pebble.PebbleEngine
+import io.pebbletemplates.pebble.template.PebbleTemplate
 import groovy.json.JsonOutput
 import org.eclipse.jetty.websocket.api.Session
 import org.eclipse.jetty.websocket.api.WriteCallback
