@@ -67,7 +67,7 @@ class HeatpumpController implements IHeatpumpController {
      * @return updated state
      */
     HeatpumpControllerState getState() {
-        def s1 = k1Pin.tate
+        def s1 = k1Pin.state
         if(k1Pin.isHigh()) {
             return HeatpumpControllerState.NORMALOPERATION
         } else if(k1Pin.isLow()) {
@@ -88,25 +88,25 @@ class HeatpumpController implements IHeatpumpController {
         state
     }
 
-    static void main(String[] args) {
-        def controller = new HeatpumpController()
-        println 'both relays should be off'
-        while(true){
-            print "Eingabe Normal, Suspend, eXit > "
-            def r = java.lang.System.in.newReader().readLine()
-            if(r.toUpperCase().startsWith('N')) {
-                controller.state = HeatpumpControllerState.NORMALOPERATION
-            } else if(r.toUpperCase().startsWith('S')) {
-                controller.state = HeatpumpControllerState.SUSPENDED
-            } else if(r.toUpperCase().startsWith('X')) {
-                break
-            } else {
-                println "read: $r"
-            }
-        }
-        controller.shutdown()
-        Thread.sleep(1000)
-    }
+//    static void main(String[] args) {
+//        def controller = new HeatpumpController()
+//        println 'both relays should be off'
+//        while(true){
+//            print "Eingabe Normal, Suspend, eXit > "
+//            def r = java.lang.System.in.newReader().readLine()
+//            if(r.toUpperCase().startsWith('N')) {
+//                controller.state = HeatpumpControllerState.NORMALOPERATION
+//            } else if(r.toUpperCase().startsWith('S')) {
+//                controller.state = HeatpumpControllerState.SUSPENDED
+//            } else if(r.toUpperCase().startsWith('X')) {
+//                break
+//            } else {
+//                println "read: $r"
+//            }
+//        }
+//        controller.shutdown()
+//        Thread.sleep(1000)
+//    }
 }
 
 class HeatpumpMockController implements IHeatpumpController {

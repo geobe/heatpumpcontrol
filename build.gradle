@@ -28,20 +28,20 @@ plugins {
 }
 
 group 'de.geobe.energy'
-version '1.6.1'
+version '1.7.2'
 
 repositories {
     mavenCentral()
 }
 
 ext {
-    groovyBomVersion='4.0.20'
+    groovyBomVersion='4.0.32'
     slf4jVersion ='2.0.12'
     jodaVersion='2.12.2'
 //    javaWebsocketVersion = '1.5.6'
-    pi4jVersion = '1.4'
-    sparkVersion = '2.9.3'
-    pebbleVersion='3.1.5'
+    pi4jVersion = '4.0.2'
+    sparkVersion = '2.9.4'
+    pebbleVersion='4.1.2'
 }
 
 apply from: 'https://raw.githubusercontent.com/geobe/Java2PiWithIdea/master/crossdev.gradle'
@@ -55,6 +55,9 @@ dependencies {
     implementation "joda-time:joda-time:${jodaVersion}"
 //    implementation "org.java-websocket:Java-WebSocket:${javaWebsocketVersion}"
     implementation "com.pi4j:pi4j-core:${pi4jVersion}"
+    implementation "com.pi4j:pi4j-plugin-ffm:${pi4jVersion}"
+//    implementation "com.pi4j:pi4j-plugin-raspberrypi:${pi4jVersion}"
+//    implementation "com.pi4j:pi4j-plugin-pigpio:${pi4jVersion}"
     implementation "com.sparkjava:spark-core:${sparkVersion}"
     implementation "io.pebbletemplates:pebble:${pebbleVersion}"
 }
